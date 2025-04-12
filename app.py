@@ -1,167 +1,186 @@
-import os
-import glob
-import pandas as pd
+# import streamlit as st
+# import pandas as pd
+# import numpy as np
+# import glob
+# import os
+
+# # Setup
+# st.set_page_config(layout="wide")
+# st.title("NBA Streamlit App")
+# st.subheader("🎯 Player Threshold Probability Calculator")
+
+# # Load latest file from directory
+# directory = r"D:\streamlit_ingest\final_merged_df"
+# csv_files = glob.glob(os.path.join(directory, "*.csv"))
+# latest_file = max(csv_files, key=os.path.getmtime)
+# df = pd.read_csv(latest_file)
+
+# # Only keep relevant columns
+# df = df[['Player', 'team', 'PTS', 'AST', 'REB', 'recentgames_PTS', 'recentgames_AST', 'recentgames_REB']]
+# df = df.sort_values(by=["team", "Player"], ascending=[True, True])
+
+# # Dropdown to select player
+# player_name = st.selectbox("Select Player", df['Player'].unique())
+
+# # Create tabs
+# tabs = st.tabs(["📊 Points (PTS)",  "💪 Rebounds (REB)", "🎯 Assists (AST)"])
+
+# # Define a function for repeated logic
+# def display_stat_tab(stat_label, stat_col, recent_col):
+#     threshold = st.number_input(f"Enter Threshold for {stat_label}", value=20)
+
+#     player_row = df[df['Player'] == player_name]
+#     if not player_row.empty:
+#         prediction_str = player_row[stat_col].values[0]  # Format: "18 - 24 - 30"
+
+#         try:
+#             low_str, mean_str, high_str = prediction_str.split(" - ")
+#             low = int(low_str)
+#             mean = int(mean_str)
+#             high = int(high_str)
+
+#             if threshold < 0:
+#                 st.warning("Please enter a valid threshold above 0.")
+#                 return
+
+#             std_estimate = (high - low) / 2
+#             simulated_outcomes = np.random.normal(loc=mean, scale=std_estimate, size=100000)
+#             prob_over_threshold = np.mean(simulated_outcomes >= threshold)
+
+#             st.subheader("🎯 Probability Meter")
+#             st.metric(
+#                 label=f"Probability {player_name} gets ≥ {threshold} {stat_label}",
+#                 value=f"{prob_over_threshold:.1%}"
+#             )
+#             st.progress(prob_over_threshold)
+
+#             st.markdown(f"""
+#             **What does this mean?**
+
+#             Out of **100,000 simulations** of what {player_name} might get:
+
+#             > **{int(prob_over_threshold * 100000):,}** were **{threshold} or more**.
+
+#             That means there's about a **{prob_over_threshold:.2%} chance** they hit that number or more.
+#             """)
+
+#             st.subheader("📈 Recent Games")
+#             recent_games_str = player_row[recent_col].values[0]
+#             st.text(f"{player_name} - {player_row['team'].values[0]}: {recent_games_str}")
+
+#         except:
+#             st.warning("Prediction format invalid. Must be like '18 - 24 - 30'")
+#     else:
+#         st.warning("Player not found.")
+
+# # Use each tab
+# with tabs[0]:
+#     display_stat_tab("PTS", "PTS", "recentgames_PTS")
+
+# with tabs[2]:
+#     display_stat_tab("AST", "AST", "recentgames_AST")
+
+# with tabs[1]:
+#     display_stat_tab("REB", "REB", "recentgames_REB")
+
 
 import streamlit as st
+import pandas as pd
+import numpy as np
+import glob
+import os
 
-
-
-
-
+# Setup
 st.set_page_config(layout="wide")
 st.title("NBA Streamlit App")
+st.subheader("🎯 Player Threshold Probability Calculator")
 
-st.subheader("NBA Player Statistics")
-st.markdown("This app displays NBA player statistics.")
-
-# Define the directory where your files are stored
+# Load latest file from directory
 directory = r"D:\streamlit_ingest\final_merged_df"
-
-# Use glob to get all CSV files in the directory
 csv_files = glob.glob(os.path.join(directory, "*.csv"))
+latest_file = max(csv_files, key=os.path.getmtime)
+df = pd.read_csv(latest_file)
 
-# Sort the files by modification time (most recent first)
-latest_file_final = max(csv_files, key=os.path.getmtime)
-
-
-
-
-# Read the latest CSV file
-df = pd.read_csv(latest_file_final)
-
-df = df[[
-    'Player','team','PTS','PTS_First_Pct','PTS_Second_Pct','PTS_Third_Pct','recentgames_PTS',
-    'REB','REB_First_Pct','REB_Second_Pct','REB_Third_Pct','recentgames_REB',
-    'AST','AST_First_Pct','AST_Second_Pct','AST_Third_Pct','recentgames_AST',
-]]
-
+# Only keep relevant columns
+df = df[['Player', 'team', 'PTS', 'AST', 'REB', 'recentgames_PTS', 'recentgames_AST', 'recentgames_REB']]
 df = df.sort_values(by=["team", "Player"], ascending=[True, True])
 
+# You control the confidence level here (users can't change it)
+confidence_level = 0.95
+z_score = {0.90: 1.645, 0.95: 1.96, 0.99: 2.576}[confidence_level]
 
+# Dropdown to select player
+player_name = st.selectbox("Select Player", df['Player'].unique())
 
-# Custom style to limit max height/width via CSS
-st.markdown("""
-    <style>
-        .fixed-height-table .stDataFrame { 
-            max-height: 400px; 
-            overflow-y: auto;
-        }
-    </style>
-""", unsafe_allow_html=True)
+# Create tabs
+tabs = st.tabs(["📊 Points (PTS)",  "💪 Rebounds (REB)", "🎯 Assists (AST)"])
 
-tab1, tab2, tab3, tab_input, tab_match_pts = st.tabs(["PTS Predictions", "REB Predictions", "AST Predictions", "🔍 Search Player", "Matchup First points"])
+# Define a function for repeated logic
+def display_stat_tab(stat_label, stat_col, recent_col):
+    threshold = st.number_input(f"Enter Threshold for {stat_label}", value=20)
 
-with tab1:
-    st.subheader("Search for Player Stats")
+    player_row = df[df['Player'] == player_name]
+    if not player_row.empty:
+        prediction_str = player_row[stat_col].values[0]  # Format: "18 - 24 - 30"
 
-    # Add a search box to filter players by name
-    player_name = st.text_input("Enter Player Name", key="search_player_tab1")
+        try:
+            low_str, mean_str, high_str = prediction_str.split(" - ")
+            low = int(low_str)
+            mean = int(mean_str)
+            high = int(high_str)
 
-    # If there's a player name entered, filter the dataframe by it
-    if player_name:
-        filtered_df = df[df['Player'].str.contains(player_name, case=False, na=False)]
+            if threshold < 0:
+                st.warning("Please enter a valid threshold above 0.")
+                return
+
+            # Estimate standard deviation using z-score
+            std_estimate = (high - low) / (2 * z_score)
+
+            # Simulate outcomes
+            simulated_outcomes = np.random.normal(loc=mean, scale=std_estimate, size=100000)
+            prob_over_threshold = np.mean(simulated_outcomes >= threshold)
+
+            # Display result
+            st.subheader("🎯 Probability Meter")
+            st.metric(
+                label=f"Probability {player_name} gets ≥ {threshold} {stat_label}",
+                value=f"{prob_over_threshold:.1%}"
+            )
+            st.progress(prob_over_threshold)
+
+            st.markdown(f"""
+            **What does this mean?**
+
+            Out of **100,000 simulations** of what {player_name} might get:
+
+            > **{int(prob_over_threshold * 100000):,}** were **{threshold} or more**.
+
+            That means there's about a **{prob_over_threshold:.2%} chance** they hit that number or more.
+
+            _(Confidence level: {int(confidence_level * 100)}%)_
+            """)
+
+            # Show recent games
+            st.subheader("📈 Recent Games")
+            recent_games_str = player_row[recent_col].values[0]
+            st.text(f"{player_name} - {player_row['team'].values[0]}: {recent_games_str}")
+
+        except:
+            st.warning("Prediction format invalid. Must be like '18 - 24 - 30'")
     else:
-        filtered_df = df  # Show the full dataframe if no search term
+        st.warning("Player not found.")
 
-    # Display the filtered dataframe
-    st.markdown('<div class="fixed-height-table">', unsafe_allow_html=True)
-    st.dataframe(
-        filtered_df[['Player','team' ,'PTS','PTS_First_Pct','PTS_Second_Pct','PTS_Third_Pct']].reset_index(drop=True),
-        use_container_width=True
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
+# Use each tab
+with tabs[0]:
+    display_stat_tab("PTS", "PTS", "recentgames_PTS")
 
+with tabs[2]:
+    display_stat_tab("AST", "AST", "recentgames_AST")
 
-with tab2:
-    st.subheader("Search for Player Stats")
-
-    # Add a search box to filter players by name
-    player_name = st.text_input("Enter Player Name", key="search_player_tab2")
-
-    # If there's a player name entered, filter the dataframe by it
-    if player_name:
-        filtered_df = df[df['Player'].str.contains(player_name, case=False, na=False)]
-    else:
-        filtered_df = df  # Show the full dataframe if no search term
+with tabs[1]:
+    display_stat_tab("REB", "REB", "recentgames_REB")
 
 
 
 
-    st.markdown('<div class="fixed-height-table">', unsafe_allow_html=True)
-    st.dataframe(
-        df[['Player', 'team' ,'REB','REB_First_Pct','REB_Second_Pct','REB_Third_Pct']].reset_index(drop=True),
-        use_container_width=True
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
 
-with tab3:
-    st.subheader("Search for Player Stats")
-
-    # Add a search box to filter players by name
-    player_name = st.text_input("Enter Player Name", key="search_player_tab3")
-
-    # If there's a player name entered, filter the dataframe by it
-    if player_name:
-        filtered_df = df[df['Player'].str.contains(player_name, case=False, na=False)]
-    else:
-        filtered_df = df  # Show the full dataframe if no search term
-
-
-    st.markdown('<div class="fixed-height-table">', unsafe_allow_html=True)
-    st.dataframe(
-        df[['Player', 'team' ,'AST','AST_First_Pct','AST_Second_Pct','AST_Third_Pct']].reset_index(drop=True),
-        use_container_width=True
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# 🔍 Player Search Tab
-with tab_input:
-    st.subheader("Search Player Stats")
-    player_name = st.text_input("Enter Player Name")
-
-    if player_name:
-        filtered_df = df[df['Player'].str.contains(player_name, case=False, na=False)]
-        if not filtered_df.empty:
-            st.dataframe(filtered_df.reset_index(drop=True), use_container_width=True)
-        else:
-            st.warning("Player not found. Try checking the spelling or a different name.")
-
-    with st.expander("📊 Compare Two Players"):
-        col1, col2 = st.columns(2)
-
-        with col1:
-            player1 = st.selectbox("Select First Player", df['Player'].unique(), key="compare_player_1")
-
-        with col2:
-            player2 = st.selectbox("Select Second Player", df['Player'].unique(), key="compare_player_2")
-
-        # Filter data for the selected players
-        comparison_df = df[df['Player'].isin([player1, player2])].reset_index(drop=True)
-
-        if player1 != player2 and len(comparison_df) == 2:
-            st.markdown('<div class="fixed-height-table">', unsafe_allow_html=True)
-            st.dataframe(comparison_df, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        else:
-            st.info("Please select two different players to compare.")
-
-targets = ['PTS', 'REB', 'AST']
-for target in targets:
-    directory_matchup = rf"D:\streamlit_ingest\matchup_{target}"
-    # Use glob to get all CSV files in the directory
-    csv_files_matchup = glob.glob(os.path.join(directory_matchup, "*.csv"))
-    # Sort the files by modification time (most recent first)
-    latest_file_matchup = max(csv_files_matchup, key=os.path.getmtime)
-
-    df_matchup = pd.read_csv(latest_file_matchup)
-
-
-
-    with tab_match_pts:
-        st.subheader(f"Matchup {target}")
-        st.markdown('<div class="fixed-height-table">', unsafe_allow_html=True)
-        st.dataframe(
-            df_matchup.reset_index(drop=True),
-            use_container_width=True
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
