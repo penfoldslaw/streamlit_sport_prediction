@@ -25,7 +25,7 @@ confidence_level = 0.95
 z_score = {0.90: 1.645, 0.95: 1.96, 0.99: 2.576}[confidence_level]
 
 # Dropdown to select player
-player_name = st.selectbox("Select Player", df['Player'].unique())
+player_name = st.selectbox("Search or Select a Player", df['Player'].unique())
 
 # Create tabs
 tabs = st.tabs(["📊 Points (PTS)",  "💪 Rebounds (REB)", "🎯 Assists (AST)"])
