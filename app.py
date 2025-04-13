@@ -96,7 +96,8 @@ st.title("Penfolds Predictions")
 st.subheader("🎯 Boost Your Edge with NBA Player Probabilities")
 
 # Load latest file from directory
-directory = r"D:\streamlit_ingest\final_merged_df"
+# directory = r"D:\streamlit_ingest\final_merged_df"
+directory = "/home/ubuntu/aws_streamlit_ingest/streamlit_ingest/final_merged_df"
 csv_files = glob.glob(os.path.join(directory, "*.csv"))
 latest_file = max(csv_files, key=os.path.getmtime)
 df = pd.read_csv(latest_file)
