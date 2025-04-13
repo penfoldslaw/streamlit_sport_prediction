@@ -92,8 +92,8 @@ import os
 
 # Setup
 st.set_page_config(layout="wide")
-st.title("NBA Streamlit App")
-st.subheader("🎯 Player Threshold Probability Calculator")
+st.title("Penfolds Predictions")
+st.subheader("🎯 Boost Your Edge with NBA Player Probabilities")
 
 # Load latest file from directory
 directory = r"D:\streamlit_ingest\final_merged_df"
