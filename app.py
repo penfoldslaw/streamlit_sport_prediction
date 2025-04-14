@@ -16,7 +16,7 @@ with col1:
     st.subheader("🎯 Boost Your Edge with NBA Player Probabilities")
 
 with col2:
-    st.markdown("Last update: April 14, 2025")
+    st.markdown("Last update: Apr 14, 2025")
 
 # Load latest file from directory
 directory = r"D:\streamlit_ingest\final_merged_df"
@@ -32,9 +32,6 @@ df = df.sort_values(by=["team", "Player"], ascending=[True, True])
 # You control the confidence level here (users can't change it)
 confidence_level = 0.95
 z_score = {0.90: 1.645, 0.95: 1.96, 0.99: 2.576}[confidence_level]
-
-# Create two columns for the label and the date
-# Create header row: label + date
 
 
 # Full-width selectbox below the label row
