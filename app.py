@@ -3,11 +3,20 @@ import pandas as pd
 import numpy as np
 import glob
 import os
+from datetime import date
+
 
 # Setup
 st.set_page_config(layout="wide")
 st.title("Penfolds Predictions")
-st.subheader("🎯 Boost Your Edge with NBA Player Probabilities")
+
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    st.subheader("🎯 Boost Your Edge with NBA Player Probabilities")
+
+with col2:
+    st.markdown("Last update: April 14, 2025")
 
 # Load latest file from directory
 directory = r"D:\streamlit_ingest\final_merged_df"
@@ -24,8 +33,13 @@ df = df.sort_values(by=["team", "Player"], ascending=[True, True])
 confidence_level = 0.95
 z_score = {0.90: 1.645, 0.95: 1.96, 0.99: 2.576}[confidence_level]
 
-# Dropdown to select player
-player_name = st.selectbox("Search or Select a Player", df['Player'].unique())
+# Create two columns for the label and the date
+# Create header row: label + date
+
+
+# Full-width selectbox below the label row
+player_name = st.selectbox("Search or Select a Player", df['Player'].unique())  # Empty label since we already have a header
+
 
 # Create tabs
 tabs = st.tabs(["📊 Points (PTS)",  "💪 Rebounds (REB)", "🎯 Assists (AST)"])
@@ -129,12 +143,3 @@ with tabs[2]:
 
 with tabs[1]:
     display_stat_tab("REB", "REB", "recentgames_REB")
-
-
-
-
-
-
-
-
-
