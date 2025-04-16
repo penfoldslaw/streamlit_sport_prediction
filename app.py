@@ -149,7 +149,7 @@ with col1:
     st.subheader("🎯 Boost Your Edge with NBA Player Probabilities")
 
 with col2:
-    st.markdown("Last update: Apr 14, 2025")
+    st.markdown("Last update: Apr 15, 2025")
 
 # Load latest file from directory
 # directory = r"D:\streamlit_ingest\final_merged_df"
@@ -271,12 +271,3 @@ with tabs[2]:
 
 with tabs[1]:
     display_stat_tab("REB", "REB", "recentgames_REB")
-
-
-
-
-
-
-
-
-
