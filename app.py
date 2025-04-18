@@ -248,7 +248,7 @@ def display_stat_tab(stat_label, stat_col, recent_col):
             st.text(f"{player_name} - {player_row['team'].values[0]}: {recent_games_str}")
 
         except Exception as e:
-            st.warning("Prediction format invalid. Must be like '18 - 24 - 30 if it, not enough data for prediction sorry about that")
+            st.warning("Prediction format invalid. Must be like '18 - 24 - 30. if format is correct, not enough data for prediction sorry about that")
     else:
         st.warning("Player not found.")
 
