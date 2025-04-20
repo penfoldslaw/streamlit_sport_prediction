@@ -155,7 +155,7 @@ with col1:
     st.subheader("🎯 Boost Your Edge with NBA Player Probabilities")
 
 with col2:
-    st.markdown("Last update: Apr 18, 2025")
+    st.markdown("Last update: Apr 20, 2025")
 
 # Load latest file from directory
 directory = "/home/ubuntu/aws_streamlit_ingest/streamlit_ingest/final_merged_df"
