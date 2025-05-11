@@ -9,13 +9,25 @@ from datetime import date
 st.set_page_config(layout="wide")
 st.title("Penfolds Predictions")
 
+# Load your schedule file
+schedule_directory = r"D:\streamlit_ingest\schedule_csv_2024-25\schedule_content.csv"
+schedule_df = pd.read_csv(schedule_directory)
+
+# Get the first date value and format it
+first_date_str = schedule_df['DATE'].iloc[0]
+# Ensure it's parsed correctly to datetime object
+first_date = pd.to_datetime(first_date_str)
+# Format as "Apr 14, 2025"
+formatted_date = first_date.strftime("%b %d, %Y")
+
+# Display in Streamlit
 col1, col2 = st.columns([3, 1])
 
 with col1:
     st.subheader("🎯 Boost Your Edge with NBA Player Probabilities")
 
 with col2:
-    st.markdown("Last update: Apr 14, 2025")
+    st.markdown(f"Last update: {formatted_date}")
 
 # Load latest file from directory
 directory = r"D:\streamlit_ingest\final_merged_df"
